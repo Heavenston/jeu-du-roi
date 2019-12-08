@@ -1,23 +1,21 @@
 <template>
-  <v-dialog persistent v-model="dialog">
+  <v-dialog v-model="dialog" max-width="700px">
     <template v-slot:activator="{on}">
       <v-btn icon v-on="on"><v-icon>mdi-plus-thick</v-icon></v-btn>
     </template>
 
-    <transition name="slide-x-transition">
     <v-card>
       <v-card-title>Nouveau joueur</v-card-title>
       <v-card-text>
-        <v-form ref="form">
-          <v-text-field label="Nom" color="black" v-model="name" :error-messages="nameErrors" @input="$v.name.$touch()" @blur="$v.name.$touch()"></v-text-field>
+        <v-form ref="form" @submit.prevent="validate">
+          <v-text-field ref="textField" label="Nom" color="black" v-model="name" :error-messages="nameErrors" @input="$v.name.$touch()" @blur="$v.name.$touch()"></v-text-field>
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-btn color="success" @click="validate">Valider</v-btn>
-        <v-btn color="error" @click="close">Annuler</v-btn>
+        <v-btn color="error" @click="dialog = false">Annuler</v-btn>
       </v-card-actions>
     </v-card>
-    </transition>
   </v-dialog>
 </template>
 
@@ -46,19 +44,28 @@ export default Vue.extend({
       return errors;
     }
   },
+  watch: {
+    dialog(v) {
+      if (this.dialog) {
+        this.reset();
+        setTimeout(() => {
+          (this.$refs.textField as HTMLInputElement).focus();
+        }, 200);
+      }
+    }
+  },
 
   methods: {
-    close() {
-      this.dialog = false;
+    reset() {
       this.name = "";
       this.$v.$reset();
     },
     validate() {
       this.$v.$touch();
       if (this.$v.$invalid) return;
+      this.dialog = false;
 
       this.$emit("validated", this.name);
-      this.close();
     }
   },
 

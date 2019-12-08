@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app>
-      <h1 class="headline font-weight-medium">Le jeu du roi</h1>
+      <nuxt-link tag="h1" class="headline font-weight-medium" style="cursor: pointer;" to="/">Le jeu du roi</nuxt-link>
     </v-app-bar>
     <v-content>
       <nuxt />
