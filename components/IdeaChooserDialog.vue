@@ -63,7 +63,7 @@
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="orange" :disabled="loading || !areInputsValid" @click="choose">Choisir <v-icon color="red">mdi-fire</v-icon></v-btn>
+        <v-btn color="#f2b3eb" :disabled="loading || !areInputsValid" @click="choose">Choisir <v-icon color="red">mdi-fire</v-icon></v-btn>
       </v-card-actions>
       <v-overlay v-if="loading" absolute>
         <v-progress-circular indeterminate size="64"></v-progress-circular>
@@ -118,7 +118,14 @@ export default Vue.extend({
       setTimeout(() => {
         this.loading = false;
         this.dialog = false;
-        this.$emit("choosed", this.numberOfPlayers, "$(1) mange les cheveux de $(2)");
+        let text = "";
+        if (this.numberOfPlayers == 1)
+          text = "$(1) fais 10 pompes";
+        else if (this.numberOfPlayers == 2)
+          text = "$(1) fais 10 pompes avec $(2) sur le dos"
+        else
+          text = "$(1) fais des pompes avec $(2) sur le dos pendant que $(3+) leurs crix dessus"
+        this.$emit("choosed", this.numberOfPlayers, text);
       }, 2000);
     }
   }

@@ -33,7 +33,7 @@
                       <v-btn
                       color="#f2b3eb"
                       :disabled="kingId == null || gotIdea"
-                      v-on="on">Pas d'idée</v-btn>
+                      v-on="on">Pas d'idée (WIP)</v-btn>
                     </template>
                   </IdeaChooserDialog>
                 </v-col>
@@ -133,6 +133,15 @@ export default Vue.extend({
       }
 
       this.autoIdeaText = text.replace(/\$\(([0-9]+)\)/g, (c,n) => this.players[this.targetsId[n-1]]);
+      this.autoIdeaText = this.autoIdeaText.replace(
+        /\$\(([0-9]+)\+\)/g,
+        (c,n) => {
+          let out = this.targetsId.map((v,i) => this.players[v]).slice(n-1);
+          if (out.length >= 2)
+            out.splice(-2, 2, `${out[out.length-2]} et ${out[out.length-1]}`);
+          return out.join(", ");
+        }
+      );
     }
   },
   computed: {
