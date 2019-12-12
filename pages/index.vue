@@ -2,7 +2,7 @@
   <v-container fluid fill-height>
     <v-row justify="center" class="ma-0">
       <v-col class=shrink>
-        <v-btn x-large color="success" to="/game">Jouer</v-btn>
+        <v-btn x-large color="#f2b3eb" to="/game">Jouer</v-btn>
       </v-col>
     </v-row>
   </v-container>

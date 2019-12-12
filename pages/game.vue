@@ -27,13 +27,20 @@
                 </v-col>
               </v-row>
               <v-row justify="center">
+                <v-col class="flex-grow-0 text-no-wrap">
+                  <v-btn color="#f2b3eb" :disabled="kingId == null || gotIdea" v-if="!wantAnIdea" @click="wantAnIdea = true">Pas d'idée</v-btn>
+                  <v-btn color="#ffdbfb" :disabled="kingId == null || gotIdea" v-if="!wantAnIdea" @click="gotIdea = true">T'inquiète paupiette</v-btn>
+                  <IdeaChooser v-else :MaxPlayer="this.players.length-1"></IdeaChooser>
+                </v-col>
+              </v-row>
+              <v-row justify="center">
                 <v-col v-for="n in players.length-1" :key="n" class="flex-grow-0">
                   <v-btn
                   v-if="typeof(targetsId[n-1]) != 'number'"
-                  :disabled="kingId == null || n > 1 ? typeof(targetsId[n-2]) != 'number' : false"
+                  :disabled="!gotIdea || n > 1 ? typeof(targetsId[n-2]) != 'number' : false"
                   :loading="isTargetsLoading[n-1]"
                   @click="chooseTarget(n-1)"
-                  color="success">Cible #{{n}}</v-btn>
+                  color="success">Joueur #{{n}}</v-btn>
 
                   <span v-else class="headline font-weight-medium text-no-wrap">
                     <span>{{players[targetsId[n-1]]}}</span>
@@ -54,12 +61,15 @@
 <script lang="ts">
 import Vue from 'vue'
 import Players from "@/components/Players.vue"
+import IdeaChooser from "@/components/IdeaChooser.vue"
+
 
 export default Vue.extend({
   name: "Game",
 
   components: {
     Players,
+    IdeaChooser,
   },
 
   methods: {
@@ -93,7 +103,12 @@ export default Vue.extend({
       this.isTargetsLoading = [];
       this.targetsId = [];
       this.kingId = null;
+      this.gotIdea = false;
+      this.wantAnIdea = false;
       this.cpyPlayers();
+    },
+    ValidateChooseDifficulty() {
+
     }
   },
   computed: {
@@ -111,6 +126,8 @@ export default Vue.extend({
     isTargetsLoading: [] as boolean[],
 
     kingId: null as null|number,
+    gotIdea: false,
+    wantAnIdea: false,
     targetsId: [] as number[],
   })
 })

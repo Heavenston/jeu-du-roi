@@ -20,7 +20,7 @@
             </v-list>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="success" @click="validate" :disabled="players.length == 0">Valider</v-btn>
+            <v-btn color="#f2b3eb" @click="validate" :disabled="players.length == 0">Valider</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
