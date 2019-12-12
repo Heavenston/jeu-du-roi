@@ -28,7 +28,7 @@
               </v-row>
               <v-row justify="center" class="mb-3 mt-2" dense>
                 <v-col class="flex-grow-0">
-                  <IdeaChooserDialog :MaxPlayer="this.players.length-1">
+                  <IdeaChooserDialog :MaxPlayer="this.players.length-1" @choosed="autoIdea">
                     <template v-slot:activator="{on}">
                       <v-btn
                       color="#f2b3eb"
@@ -43,24 +43,29 @@
                   @click="gotIdea = true">T'inquiète paupiette</v-btn>
                 </v-col>
               </v-row>
-              <v-row justify="center" dense>
+              <v-row justify="center" dense v-if="!autoChoose && gotIdea">
                 <v-col v-for="n in players.length-1" :key="n" class="flex-grow-0">
                   <v-btn
                   v-if="typeof(targetsId[n-1]) != 'number'"
-                  :disabled="!gotIdea || n > 1 ? typeof(targetsId[n-2]) != 'number' : false"
+                  :disabled="!gotIdea || (n > 1 ? typeof(targetsId[n-2]) != 'number' : false)"
                   :loading="isTargetsLoading[n-1]"
                   @click="chooseTarget(n-1)"
                   color="success">Joueur #{{n}}</v-btn>
 
-                  <span v-else class="headline font-weight-medium text-no-wrap">
+                  <span v-else class="headline font-weight-medium text-no-wrap" :class="{'mr-3': n != players.length-1}">
                     <span>{{players[targetsId[n-1]]}}</span>
                   </span>
+                </v-col>
+              </v-row>
+              <v-row dense v-else-if="gotIdea">
+                <v-col class="grey--text text--darken-3 font-weight-bold headline text-center">
+                  {{autoIdeaText}}
                 </v-col>
               </v-row>
             </v-container>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="orange" @click="reset" :disabled="!canReset">Reset</v-btn>
+            <v-btn color="orange" @click="reset" :disabled="!canReset">Prochain roi</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -115,6 +120,19 @@ export default Vue.extend({
       this.kingId = null;
       this.gotIdea = false;
       this.cpyPlayers();
+    },
+
+    autoIdea(nbOfPlayers: number, text: string) {
+      let players = [];
+      this.autoChoose = true;
+      this.gotIdea = true;
+
+      for (let n = 0; n < nbOfPlayers; n++) {
+        this.targetsId.splice(n, 1, this.remainingPlayers[Math.floor(Math.random() * this.remainingPlayers.length)])
+        this.remainingPlayers = this.remainingPlayers.filter(v => v != this.targetsId[n]);
+      }
+
+      this.autoIdeaText = text.replace(/\$\(([0-9]+)\)/g, (c,n) => this.players[this.targetsId[n-1]]);
     }
   },
   computed: {
@@ -131,8 +149,11 @@ export default Vue.extend({
     isKingLoading: false,
     isTargetsLoading: [] as boolean[],
 
+    autoIdeaText: "",
+
     kingId: null as null|number,
     gotIdea: false,
+    autoChoose: false,
     targetsId: [] as number[],
   })
 })

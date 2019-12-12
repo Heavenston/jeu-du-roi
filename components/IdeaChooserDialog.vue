@@ -118,6 +118,7 @@ export default Vue.extend({
       setTimeout(() => {
         this.loading = false;
         this.dialog = false;
+        this.$emit("choosed", this.numberOfPlayers, "$(1) mange les cheveux de $(2)");
       }, 2000);
     }
   }
