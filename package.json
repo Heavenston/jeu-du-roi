@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@types/vuelidate": "^0.7.9",
+    "core-js": "^2.6.0",
+    "firebase": "^7.5.2",
     "nuxt": "^2.0.0",
     "vuelidate": "^0.7.4"
   },
