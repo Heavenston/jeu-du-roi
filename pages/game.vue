@@ -26,14 +26,24 @@
                   </h1>
                 </v-col>
               </v-row>
-              <v-row justify="center">
-                <v-col class="flex-grow-0 text-no-wrap">
-                  <v-btn color="#f2b3eb" :disabled="kingId == null || gotIdea" v-if="!wantAnIdea" @click="wantAnIdea = true">Pas d'idée</v-btn>
-                  <v-btn color="#ffdbfb" :disabled="kingId == null || gotIdea" v-if="!wantAnIdea" @click="gotIdea = true">T'inquiète paupiette</v-btn>
-                  <IdeaChooser v-else :MaxPlayer="this.players.length-1"></IdeaChooser>
+              <v-row justify="center" class="mb-3 mt-2" dense>
+                <v-col class="flex-grow-0">
+                  <IdeaChooserDialog :MaxPlayer="this.players.length-1">
+                    <template v-slot:activator="{on}">
+                      <v-btn
+                      color="#f2b3eb"
+                      :disabled="kingId == null || gotIdea"
+                      v-on="on">Pas d'idée</v-btn>
+                    </template>
+                  </IdeaChooserDialog>
+                </v-col>
+                <v-col class="flex-grow-0">
+                  <v-btn color="#ffdbfb"
+                  :disabled="kingId == null || gotIdea"
+                  @click="gotIdea = true">T'inquiète paupiette</v-btn>
                 </v-col>
               </v-row>
-              <v-row justify="center">
+              <v-row justify="center" dense>
                 <v-col v-for="n in players.length-1" :key="n" class="flex-grow-0">
                   <v-btn
                   v-if="typeof(targetsId[n-1]) != 'number'"
@@ -61,7 +71,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import Players from "@/components/Players.vue"
-import IdeaChooser from "@/components/IdeaChooser.vue"
+import IdeaChooserDialog from "@/components/IdeaChooserDialog.vue"
 
 
 export default Vue.extend({
@@ -69,7 +79,7 @@ export default Vue.extend({
 
   components: {
     Players,
-    IdeaChooser,
+    IdeaChooserDialog,
   },
 
   methods: {
@@ -104,11 +114,7 @@ export default Vue.extend({
       this.targetsId = [];
       this.kingId = null;
       this.gotIdea = false;
-      this.wantAnIdea = false;
       this.cpyPlayers();
-    },
-    ValidateChooseDifficulty() {
-
     }
   },
   computed: {
@@ -127,7 +133,6 @@ export default Vue.extend({
 
     kingId: null as null|number,
     gotIdea: false,
-    wantAnIdea: false,
     targetsId: [] as number[],
   })
 })
