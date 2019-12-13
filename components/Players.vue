@@ -42,7 +42,8 @@ export default Vue.extend({
   methods: {
     validate() {
       localStorage.setItem("players", JSON.stringify(this.players));
-      this.$emit("validated", this.players);
+      this.$store.commit("game/SET_PLAYERS", this.players);
+      this.$emit("validated");
     }
   },
   mounted() {

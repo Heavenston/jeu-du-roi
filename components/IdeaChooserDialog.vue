@@ -82,8 +82,6 @@ export default Vue.extend({
   name: "IdeaChooserDialog",
   mixins: [validationMixin],
 
-  props: ["MaxPlayer"],
-
   data: () => ({
     difficulty: 0,
     numberOfPlayers: 0,
@@ -92,14 +90,10 @@ export default Vue.extend({
     dialog: false,
   }),
 
-  mounted() {
-    console.log(this.$vuetify);
-  },
-
   computed: {
     numberOfPlayerItems() {
       let items = [];
-      for (let i = 1; i <= this.MaxPlayer; i++) {
+      for (let i = 1; i <= this.$store.getters["game/remainingPlayers"].length; i++) {
         items.push({
           value: i,
           text: `${i} Joueur${i > 1 ? 's' : ''}`
@@ -125,7 +119,13 @@ export default Vue.extend({
           text = "$(1) fais 10 pompes avec $(2) sur le dos"
         else
           text = "$(1) fais des pompes avec $(2) sur le dos pendant que $(3+) leurs crix dessus"
-        this.$emit("choosed", this.numberOfPlayers, text);
+        
+        this.$store.dispatch("game/addRandomTargets", this.numberOfPlayers);
+        
+        this.$store.commit("game/SET_IDEA_TEXT", text);
+        this.$store.commit("game/SET_GOT_IDEA", true);
+        this.$store.commit("game/SET_AUTO_CHOOSE", true);
+
       }, 2000);
     }
   }
