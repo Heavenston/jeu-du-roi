@@ -1,6 +1,6 @@
 import firebase from "firebase/app"
 
-if (!firebase.app)
+if (firebase.apps.length == 0) {
   firebase.initializeApp({
     apiKey: "AIzaSyAlQy4TfIFJYCi9ynFlj4WhLeKPBHGR5i4",
     authDomain: "kinggame-d06b7.firebaseapp.com",
@@ -11,3 +11,4 @@ if (!firebase.app)
     appId: "1:313270485734:web:6321050c987529f1167127",
     measurementId: "G-GJE25WNTYT"
   });
+}

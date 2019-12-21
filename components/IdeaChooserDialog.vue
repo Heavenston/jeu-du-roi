@@ -77,6 +77,8 @@
 import Vue from 'vue'
 import { validationMixin } from "vuelidate"
 import { required } from "vuelidate/lib/validators";
+import app from "firebase/app"
+import "firebase/firestore"
 
 export default Vue.extend({
   name: "IdeaChooserDialog",
@@ -109,23 +111,35 @@ export default Vue.extend({
   methods: {
     choose() {
       this.loading = true;
-      setTimeout(() => {
+      setTimeout(async () => {
         this.loading = false;
         this.dialog = false;
-        let text = "";
-        if (this.numberOfPlayers == 1)
-          text = "$(1) fais 10 pompes";
-        else if (this.numberOfPlayers == 2)
-          text = "$(1) fais 10 pompes avec $(2) sur le dos"
-        else
-          text = "$(1) fais des pompes avec $(2) sur le dos pendant que $(3+) leurs crix dessus"
+
+        const query = await app.firestore()
+          .collection("challenges")
+          .where("difficulty", "==", this.difficulty)
+          .where("players", "==", this.numberOfPlayers)
+          .get();
         
-        this.$store.dispatch("game/addRandomTargets", this.numberOfPlayers);
+        if (query.docs.length === 0) {
+          throw "No docs found";
+        }
+
+        let doc = query.docs
+          .filter(
+            d => (this.$store.state.game.challengeHistory as string[]).some(n => n == d.id)
+          )[0];
+        if (!doc) {
+          this.$store.commit("")
+        }
+        const data = doc.data();
         
-        this.$store.commit("game/SET_IDEA_TEXT", text);
+        this.$store.dispatch("game/addRandomTargets", data.players);
+        
+        this.$store.commit("game/SET_IDEA_TEXT", data.text);
         this.$store.commit("game/SET_GOT_IDEA", true);
         this.$store.commit("game/SET_AUTO_CHOOSE", true);
-
+        this.$store.commit("game/ADD_TO_CHALLENGE_HISTORY", doc.id);
       }, 2000);
     }
   }

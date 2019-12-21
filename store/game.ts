@@ -5,6 +5,8 @@ export const state = () => ({
   targets: [] as number[],
   king: null as null|number,
 
+  challengeHistory: [] as string[],
+
   gotIdea: false,
   autoChoose: false,
 
@@ -17,7 +19,7 @@ export const getters: GetterTree<State, State> = {
   remainingPlayers: state => {
     let r = new Set<number>();
     for (let i = 0; i < state.players.length; i++)
-      if (!state.targets.some(v => v == i) && i != state.king) r.add(i);
+      if (!state.targets.some(v => v === i) && i !== state.king) r.add(i);
     return [...r.values()];    
   },
   parsedIdeaText: state => {
@@ -50,6 +52,10 @@ export const mutations: MutationTree<State> = {
   SET_GOT_IDEA: (state, p: boolean) => state.gotIdea = p,
   SET_AUTO_CHOOSE: (state, p: boolean) => state.autoChoose = p,
   SET_IDEA_TEXT: (state, p: string) => state.ideaText = p,
+
+  ADD_TO_CHALLENGE_HISTORY: (state, p: string) => !state.challengeHistory.some(v => v==p) && state.challengeHistory.push(p),
+  CLEAR_CHALLENGE_HISTORY: state => state.challengeHistory = [],
+  REMOVE_FROM_CHALLENGE_HISTORY: (state, ...p: string[]) => state.challengeHistory = state.challengeHistory.filter(v => !p.some(pb => v != pb)),
 };
 
 export const actions: ActionTree<State, State> = {
@@ -69,5 +75,6 @@ export const actions: ActionTree<State, State> = {
     commit("SET_GOT_IDEA", false);
     commit("SET_AUTO_CHOOSE", false);
     commit("SET_IDEA_TEXT", "");
+    commit("CLEAR_TARGETS");
   }
 }
