@@ -70,6 +70,21 @@
       </v-overlay>
     </v-card>
 
+
+    <v-dialog max-width="700px" v-model="challengeChooseDialog">
+      <v-card>
+        <v-card-title>Le roi dois choisissez un challenge</v-card-title>
+        <v-card-text>
+          <v-list>
+            <v-list-item>
+              <v-list-item-title>
+                Bonjour
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-dialog>
 </template>
 
@@ -90,7 +105,13 @@ export default Vue.extend({
 
     loading: false,
     dialog: false,
+
+    challengeChooseDialog: false,
+    possibleChallengs: [] as any[]
   }),
+
+  mounted() {
+  },
 
   computed: {
     numberOfPlayerItems() {
@@ -117,29 +138,34 @@ export default Vue.extend({
 
         const query = await app.firestore()
           .collection("challenges")
-          .where("difficulty", "==", this.difficulty)
+          .where("difficulty", "<=", this.difficulty)
           .where("players", "==", this.numberOfPlayers)
+          .orderBy("difficulty", "asc")
           .get();
         
         if (query.docs.length === 0) {
           throw "No docs found";
         }
-
-        let doc = query.docs
+        
+        const docs = query.docs
           .filter(
-            d => (this.$store.state.game.challengeHistory as string[]).some(n => n == d.id)
-          )[0];
-        if (!doc) {
-          this.$store.commit("")
+            d => !(this.$store.state.game.challengeHistory as string[]).some(n => n == d.id)
+          );
+        let doc = docs[0];
+        if (docs.length === 0) {
+          this.$store.commit("game/REMOVE_FROM_CHALLENGE_HISTORY", ...query.docs.map(d => d.id));
+          doc = query.docs[0];
         }
-        const data = doc.data();
+        
+        
+        /*const data = doc.data();
         
         this.$store.dispatch("game/addRandomTargets", data.players);
         
         this.$store.commit("game/SET_IDEA_TEXT", data.text);
         this.$store.commit("game/SET_GOT_IDEA", true);
         this.$store.commit("game/SET_AUTO_CHOOSE", true);
-        this.$store.commit("game/ADD_TO_CHALLENGE_HISTORY", doc.id);
+        this.$store.commit("game/ADD_TO_CHALLENGE_HISTORY", doc.id);*/
       }, 2000);
     }
   }
