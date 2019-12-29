@@ -1,5 +1,5 @@
 <template>
-  <v-icon>
+  <v-icon v-bind="currentItems">
     {{current}}
   </v-icon>
 </template>
@@ -11,7 +11,7 @@ export default Vue.extend({
 
   props: {
     items: {
-      type: Array as () => string[],
+      type: Array as () => string|{text:string, props?: {[name:string]: string}}[],
       required: true,
     },
     value: {
@@ -22,7 +22,13 @@ export default Vue.extend({
 
   computed: {
     current(): string {
-      return this.items[this.value];
+      let v = this.items[this.value];
+      v = typeof(v) === "string" ? v : v.text;
+      return v;
+    },
+    currentItems(): {[name: string]: string}|undefined {
+      let v = this.items[this.value];
+      return typeof(v) === "string" ? undefined : v.props;
     }
   }
 })
