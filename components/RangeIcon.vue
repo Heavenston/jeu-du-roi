@@ -23,11 +23,13 @@ export default Vue.extend({
   computed: {
     current(): string {
       let v = this.items[this.value];
+      if (!v) return "";
       v = typeof(v) === "string" ? v : v.text;
       return v;
     },
     currentItems(): {[name: string]: string}|undefined {
       let v = this.items[this.value];
+      if (!v) return undefined;
       return typeof(v) === "string" ? undefined : v.props;
     }
   }

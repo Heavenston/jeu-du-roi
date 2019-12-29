@@ -46,18 +46,7 @@
             <div v-if="$vuetify.breakpoint.smAndDown" class="text-center">
               <span v-if="difficulty == 0">Choissez la difficultée</span>
               <span v-else>Difficultée</span>
-              <v-icon color="blue lighten-4" v-if="difficulty==1">
-                mdi-emoticon-neutral-outline
-              </v-icon>
-              <v-icon color="orange darken-1" v-if="difficulty==2">
-                mdi-emoticon-outline
-              </v-icon>
-              <v-icon color="#CE93D8" v-if="difficulty==3">
-                mdi-emoticon-devil-outline
-              </v-icon>
-              <v-icon color="red darken-2" v-if="difficulty==4">
-                mdi-fire
-              </v-icon>
+              <RangeIcon :items="$store.state.difficultyEmojies" :value="difficulty-1"></RangeIcon>
             </div>
           </div>
         </v-form>
@@ -75,11 +64,16 @@
       <v-card>
         <v-card-title>Le roi dois choisissez un challenge</v-card-title>
         <v-card-text>
-          <v-list>
-            <v-list-item>
-              <v-list-item-title>
-                Bonjour
-              </v-list-item-title>
+          <v-list two-line>
+            <v-list-item link v-for="challenge in possibleChallengs" :key="`challengeChooseDialog-${challenge.id}`">
+              <v-list-item-content>
+                <v-list-item-title>
+                  {{challenge.data().text}}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <RangeIcon :items="$store.state.difficultyEmojies" :value="challenge.data().difficulty-1"></RangeIcon>
+                </v-list-item-subtitle>
+              </v-list-item-content>
             </v-list-item>
           </v-list>
         </v-card-text>
@@ -89,15 +83,20 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { validationMixin } from "vuelidate"
+import Vue from 'vue';
+import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
-import app from "firebase/app"
-import "firebase/firestore"
+import app from "firebase/app";
+import "firebase/firestore";
+import RangeIcon from "./RangeIcon.vue";
 
 export default Vue.extend({
   name: "IdeaChooserDialog",
   mixins: [validationMixin],
+
+  components: {
+    RangeIcon
+  },
 
   data: () => ({
     difficulty: 0,
@@ -134,8 +133,6 @@ export default Vue.extend({
       this.loading = true;
       setTimeout(async () => {
         this.loading = false;
-        this.dialog = false;
-
         const query = await app.firestore()
           .collection("challenges")
           .where("difficulty", "<=", this.difficulty)
@@ -147,17 +144,19 @@ export default Vue.extend({
           throw "No docs found";
         }
         
-        const docs = query.docs
-          .filter(
-            d => !(this.$store.state.game.challengeHistory as string[]).some(n => n == d.id)
-          );
-        let doc = docs[0];
-        if (docs.length === 0) {
-          this.$store.commit("game/REMOVE_FROM_CHALLENGE_HISTORY", ...query.docs.map(d => d.id));
-          doc = query.docs[0];
-        }
-        
-        
+        const docs = query.docs.sort((a,b) => {
+          const aa = (this.$store.state.game.challengeHistory as string[]).some(n => n == a.id);
+          const bb = (this.$store.state.game.challengeHistory as string[]).some(n => n == b.id);
+          const dif1 = ((+aa) - (+bb))*100;
+          
+          const difficultyDifA = Math.abs(a.data().difficulty-this.difficulty);
+          const difficultyDifB = Math.abs(b.data().difficulty-this.difficulty);
+          const dif2 = difficultyDifA-difficultyDifB;
+
+          return dif1+dif2;
+        });
+        this.possibleChallengs = docs.slice(0, 5);
+        this.challengeChooseDialog = true;
         /*const data = doc.data();
         
         this.$store.dispatch("game/addRandomTargets", data.players);
