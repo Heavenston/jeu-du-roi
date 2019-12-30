@@ -1,4 +1,5 @@
 import { GetterTree, ActionTree, MutationTree } from 'vuex'
+import * as utils from "@/utils";
 
 export const state = () => ({
   players: [] as string[],
@@ -23,7 +24,8 @@ export const getters: GetterTree<State, State> = {
     return [...r.values()];    
   },
   parsedIdeaText: state => {
-    return state.ideaText
+    return utils.parseChallenge(state.ideaText, state.targets.map(v => state.players[v]));
+    /*return state.ideaText
       .replace(/\$\(([0-9]+)\)/g, (c,n) => state.players[state.targets[n-1]])
       .replace(
         /\$\(([0-9]+)\+\)/g,
@@ -33,7 +35,7 @@ export const getters: GetterTree<State, State> = {
             out.splice(-2, 2, `${out[out.length-2]} et ${out[out.length-1]}`);
           return out.join(", ");
         }
-      );
+      );*/
   }
 };
 

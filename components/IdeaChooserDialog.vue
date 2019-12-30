@@ -52,7 +52,7 @@
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="#f2b3eb" :disabled="loading || !areInputsValid" @click="choose">Choisir <v-icon color="red">mdi-fire</v-icon></v-btn>
+        <v-btn color="#f2b3eb" :disabled="loading || !areInputsValid" @click="findPossibleChallengs">Choisir <v-icon color="red">mdi-fire</v-icon></v-btn>
       </v-card-actions>
       <v-overlay v-if="loading" absolute>
         <v-progress-circular indeterminate size="64"></v-progress-circular>
@@ -62,16 +62,16 @@
 
     <v-dialog max-width="700px" v-model="challengeChooseDialog">
       <v-card>
-        <v-card-title>Le roi dois choisissez un challenge</v-card-title>
+        <v-card-title>Choisissez un challenge</v-card-title>
         <v-card-text>
-          <v-list two-line>
-            <v-list-item link v-for="challenge in possibleChallengs" :key="`challengeChooseDialog-${challenge.id}`">
+          <v-list three-line>
+            <v-list-item @click="choose(i)" v-for="(challenge, i) in possibleChallengs" :key="`challengeChooseDialog-${challenge.id}`">
               <v-list-item-content>
-                <v-list-item-title>
-                  {{challenge.data().text}}
-                </v-list-item-title>
-                <v-list-item-subtitle>
+                <v-list-item-title line>
                   <RangeIcon :items="$store.state.difficultyEmojies" :value="challenge.data().difficulty-1"></RangeIcon>
+                  <span>Difficulté {{challenge.data().difficulty}}/4</span>
+                </v-list-item-title>
+                <v-list-item-subtitle v-html="parseChallenge(challenge.data().text, $store.state.sampleNames.map(n => `<kbd>${n}</kbd>`))">
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
@@ -89,6 +89,7 @@ import { required } from "vuelidate/lib/validators";
 import app from "firebase/app";
 import "firebase/firestore";
 import RangeIcon from "./RangeIcon.vue";
+import * as utils from "@/utils";
 
 export default Vue.extend({
   name: "IdeaChooserDialog",
@@ -129,15 +130,13 @@ export default Vue.extend({
   },
 
   methods: {
-    choose() {
+    findPossibleChallengs() {
       this.loading = true;
       setTimeout(async () => {
         this.loading = false;
         const query = await app.firestore()
           .collection("challenges")
-          .where("difficulty", "<=", this.difficulty)
-          .where("players", "==", this.numberOfPlayers)
-          .orderBy("difficulty", "asc")
+          .where("players", "<=", this.$store.state.game.players.length-1)
           .get();
         
         if (query.docs.length === 0) {
@@ -153,9 +152,13 @@ export default Vue.extend({
           const difficultyDifB = Math.abs(b.data().difficulty-this.difficulty);
           const dif2 = difficultyDifA-difficultyDifB;
 
-          return dif1+dif2;
+          const playerDifA = Math.abs(a.data().players-this.numberOfPlayers);
+          const playerDifB = Math.abs(b.data().players-this.numberOfPlayers);
+          const dif3 = playerDifA-playerDifB;
+
+          return dif1+dif2+dif3;
         });
-        this.possibleChallengs = docs.slice(0, 5);
+        this.possibleChallengs = docs.slice(0, 3);
         this.challengeChooseDialog = true;
         /*const data = doc.data();
         
@@ -165,8 +168,23 @@ export default Vue.extend({
         this.$store.commit("game/SET_GOT_IDEA", true);
         this.$store.commit("game/SET_AUTO_CHOOSE", true);
         this.$store.commit("game/ADD_TO_CHALLENGE_HISTORY", doc.id);*/
-      }, 2000);
-    }
+      }, 500);
+    },
+    choose(c: number) {
+      const challenge = this.possibleChallengs[c];
+      const data = challenge.data();
+
+      this.$store.dispatch("game/addRandomTargets", data.players);
+        
+      this.$store.commit("game/SET_IDEA_TEXT", data.text);
+      this.$store.commit("game/SET_GOT_IDEA", true);
+      this.$store.commit("game/SET_AUTO_CHOOSE", true);
+      this.$store.commit("game/ADD_TO_CHALLENGE_HISTORY", challenge.id);
+      this.dialog = false;
+      this.challengeChooseDialog = false;
+    },
+
+    parseChallenge: utils.parseChallenge
   }
 });
 </script>

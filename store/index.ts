@@ -16,5 +16,14 @@ export const state = () => ({
   {
     text: "mdi-fire",
     props: {color: "red darken-2"}
-  }]
+  }],
+
+  sampleNames: [
+    "Layla",
+    "José",
+    "Tom",
+    "Lou",
+    "Gianni",
+    "Chiara"
+  ]
 });
